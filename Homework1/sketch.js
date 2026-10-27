@@ -1,48 +1,70 @@
+let ballX;
+let ballY;
+const ballRadius = 30;
+let dragging = false;
+let dragOffsetX = 0;
+let dragOffsetY = 0;
+
 function setup() {
   createCanvas(windowWidth, windowHeight);
-  background(50);
+  ballX = width / 2;
+  ballY = height / 2;
 }
 
 function draw() {
-  print(mills());
-  noFill(); 
-  // 선 색상
-  storke(255,200,0); 
-  line(0, 0, 100, 100);
+  background(240);
+  noStroke();
+  fill(250, 100, 100);
+  circle(ballX, ballY, ballRadius * 2);
+  cursor(dragging ? 'grabbing' : (dist(mouseX, mouseY, ballX, ballY) <= ballRadius ? 'grab' : 'default'));
 }
 
-
-// 터치가 있으면 ...
-  if (touches.length > 0) {
-    for (let i = 0; i < touches.length; i++) {
-      // 터치의 현재 x,y 위치
-      let xpos = touches[i].x;
-      let ypos = touches[i].y;
-      // 현재 x,y - 이전 x,y 연결 선 그리기
-      if (prevs[i]) {
-      line(xpos, ypos, prevs[i].x, prevs[i].y); 
-      // 이전 x,y 업데이트
-      prevs[i] = {
-        x: xpos,
-        y: ypos,
-      };
-    }
+function startDrag(x, y) {
+  if (dist(x, y, ballX, ballY) <= ballRadius) {
+    dragging = true;
+    dragOffsetX = ballX - x;
+    dragOffsetY = ballY - y;
   }
 }
 
-
-// 이전 위치-선 연결되는 문제 
-// 손가락 모두 떼면 초기화 
-function mouseReleased() {
-  if (touches.length === 0) {
-    prevs = [];
-  }
+function moveBall(x, y) {
+  if (!dragging) return;
+  ballX = constrain(x + dragOffsetX, min(ballRadius, width / 2), max(width - ballRadius, width / 2));
+  ballY = constrain(y + dragOffsetY, min(ballRadius, height / 2), max(height - ballRadius, height / 2));
 }
 
 function mousePressed() {
-  if (millis() - lastTap < 300) {
-    background(50);
-  }
-  lastTap = millis();
-  
+  startDrag(mouseX, mouseY);
+  return false;
+}
+
+function mouseDragged() {
+  moveBall(mouseX, mouseY);
+  return false;
+}
+
+function mouseReleased() {
+  dragging = false;
+  return false;
+}
+
+function touchStarted() {
+  if (touches.length > 0) startDrag(touches[0].x, touches[0].y);
+  return false;
+}
+
+function touchMoved() {
+  if (touches.length > 0) moveBall(touches[0].x, touches[0].y);
+  return false;
+}
+
+function touchEnded() {
+  dragging = false;
+  return false;
+}
+
+function windowResized() {
+  resizeCanvas(windowWidth, windowHeight);
+  ballX = constrain(ballX, min(ballRadius, width / 2), max(width - ballRadius, width / 2));
+  ballY = constrain(ballY, min(ballRadius, height / 2), max(height - ballRadius, height / 2));
 }
