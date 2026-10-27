@@ -1,0 +1,141 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>作业目录 · Homework</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { width: 100%; height: 100%; margin: 0; }
+    body { display: flex; font-family: Arial, "PingFang SC", sans-serif; color: #222; background: #fff; }
+    aside { width: 190px; flex-shrink: 0; display: flex; flex-direction: column; border-right: 1px solid #e6e6e6; }
+    h1 { margin: 25px 18px 8px; font-size: 19px; font-weight: 600; }
+    .subtitle { margin: 0 18px 20px; color: #777; font-size: 12px; }
+    nav { overflow-y: auto; flex: 1; padding: 0 9px 16px; }
+    .group { margin: 21px 10px 9px; color: #888; font-size: 11px; letter-spacing: .05em; }
+    .work { display: block; padding: 12px 10px; margin: 3px 0; color: #165dce; text-decoration: none; font-size: 15px; line-height: 1.5; overflow-wrap: anywhere; border-radius: 5px; }
+    .work:hover { background: #f5f7fb; }
+    .work[aria-current="page"] { background: #edf3ff; color: #154eab; font-weight: 600; }
+    .refresh { margin: 12px 18px 20px; border: 0; padding: 0; text-align: left; background: none; color: #777; font: inherit; font-size: 12px; cursor: pointer; }
+    main { flex: 1; min-width: 0; display: flex; flex-direction: column; }
+    header { height: 42px; flex-shrink: 0; display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 0 16px; border-bottom: 1px solid #eee; font-size: 12px; }
+    #current-title { overflow: hidden; white-space: nowrap; text-overflow: ellipsis; }
+    #open-work { flex-shrink: 0; color: #666; text-decoration: none; }
+    #open-work:hover { color: #165dce; }
+    iframe { display: block; width: 100%; flex: 1; min-height: 0; border: 0; background: #fff; }
+    a:focus-visible, button:focus-visible { outline: 2px solid #165dce; outline-offset: 2px; }
+    @media (max-width: 600px) {
+      aside { width: 128px; }
+      h1 { margin: 20px 12px 8px; font-size: 16px; }
+      .subtitle { margin-left: 12px; font-size: 10px; }
+      nav { padding-left: 5px; padding-right: 5px; }
+      .work { padding: 11px 7px; font-size: 13px; }
+      .group { margin-left: 7px; }
+      header { padding: 0 10px; font-size: 11px; }
+      .refresh { margin-left: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <aside aria-label="作业目录">
+    <h1>作业目录</h1>
+    <p class="subtitle">HOMEWORK COLLECTION</p>
+    <nav id="menu" aria-label="选择作业"></nav>
+    <button class="refresh" id="refresh" type="button">刷新目录 ↻</button>
+  </aside>
+  <main>
+    <header><span id="current-title">Lost and found</span><a id="open-work" target="_blank" rel="noopener">单独打开 ↗</a></header>
+    <iframe id="viewer" title="Lost and found" allow="autoplay; fullscreen" allowfullscreen></iframe>
+  </main>
+  <script>
+    const uploadedWorks = [
+      { path: '중간고사 과제.html', title: 'Lost and found', group: '我的作品' },
+      { path: 'Dynamic-Balance_5week quanquanhai628-png_Dynamic-Balance.html', title: 'Dynamic Balance', url: 'https://quanquanhai628-png.github.io/Dynamic-Balance/', group: '我的作品' },
+      { path: 'Delete-Delete-Delete_index.html at main · quanquanhai628-png_Delete-Delete-Delete.html', title: 'MELT', url: 'https://quanquanhai628-png.github.io/Delete-Delete-Delete/', group: '我的作品' },
+      { path: 'Homework1/index.html', title: 'Homework1', group: '课堂练习' },
+      { path: 'Homework2/index.html', title: 'Homework2', group: '课堂练习' },
+      { path: 'Homework3/index.html', title: 'Homework3', group: '课堂练习' }
+    ];
+    let works = uploadedWorks.slice();
+    let activePath = null;
+    const menu = document.getElementById('menu');
+    const viewer = document.getElementById('viewer');
+    const openWork = document.getElementById('open-work');
+    const pathURL = path => path.split('/').map(encodeURIComponent).join('/');
+    const targetURL = work => work.url || pathURL(work.path);
+    function selectWork(work, updateHash = true) {
+      activePath = work.path;
+      viewer.src = targetURL(work);
+      viewer.title = work.title;
+      document.getElementById('current-title').textContent = work.title;
+      openWork.href = targetURL(work);
+      document.title = work.title + ' · 作业目录';
+      if (updateHash) history.replaceState(null, '', '#' + encodeURIComponent(work.path));
+      for (const link of menu.querySelectorAll('a')) {
+        if (link.dataset.path === activePath) link.setAttribute('aria-current', 'page');
+        else link.removeAttribute('aria-current');
+      }
+    }
+    function renderMenu() {
+      menu.replaceChildren();
+      for (const groupName of [...new Set(works.map(work => work.group))]) {
+        const heading = document.createElement('p');
+        heading.className = 'group';
+        heading.textContent = groupName;
+        menu.append(heading);
+        for (const work of works.filter(work => work.group === groupName)) {
+          const link = document.createElement('a');
+          link.className = 'work';
+          link.textContent = work.title;
+          link.href = targetURL(work);
+          link.dataset.path = work.path;
+          if (work.path === activePath) link.setAttribute('aria-current', 'page');
+          link.addEventListener('click', event => {
+            if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
+            event.preventDefault();
+            selectWork(work);
+          });
+          menu.append(link);
+        }
+      }
+    }
+    function fromHash() {
+      let path = '';
+      try { path = decodeURIComponent(location.hash.slice(1)); } catch (_) {}
+      return works.find(work => work.path === path) || works[0];
+    }
+    async function refreshMenu() {
+      const button = document.getElementById('refresh');
+      button.disabled = true;
+      button.textContent = '正在刷新…';
+      try {
+        const response = await fetch('https://api.github.com/repos/quanquanhai628-png/Homework_template/git/trees/main?recursive=1', { cache: 'no-store' });
+        if (!response.ok) throw new Error('Unable to refresh');
+        const data = await response.json();
+        if (!Array.isArray(data.tree) || data.truncated) throw new Error('Incomplete directory');
+        const htmlFiles = data.tree.filter(file => file.type === 'blob' && /\.html?$/i.test(file.path) && file.path !== 'index.html' && !file.path.split('/').some(part => part.startsWith('.') || part.endsWith('_files')));
+        const files = new Set(htmlFiles.map(file => file.path));
+        works = uploadedWorks.filter(work => files.has(work.path));
+        const known = new Set(uploadedWorks.map(work => work.path));
+        for (const file of htmlFiles) {
+          if (known.has(file.path)) continue;
+          works.push({ path: file.path, title: file.path.replace(/\/index\.html?$/i, '').replace(/\.html?$/i, ''), group: '其他上传文件' });
+        }
+        if (!works.length) works = uploadedWorks.slice();
+        renderMenu();
+        if (!works.some(work => work.path === activePath)) selectWork(works[0]);
+        button.textContent = '目录已更新 ✓';
+      } catch (_) {
+        button.textContent = '刷新目录 ↻';
+      } finally {
+        button.disabled = false;
+      }
+    }
+    renderMenu();
+    selectWork(fromHash(), false);
+    document.getElementById('refresh').addEventListener('click', refreshMenu);
+    window.addEventListener('hashchange', () => selectWork(fromHash(), false));
+    refreshMenu();
+  </script>
+</body>
+</html>
