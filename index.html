@@ -44,14 +44,14 @@
     <button class="refresh" id="refresh" type="button">刷新目录 ↻</button>
   </aside>
   <main>
-    <header><span id="current-title">Lost and found</span><a id="open-work" target="_blank" rel="noopener">单独打开 ↗</a></header>
-    <iframe id="viewer" title="Lost and found" allow="autoplay; fullscreen" allowfullscreen></iframe>
+    <header><span id="current-title">Lost and found중간고사 과제</span><a id="open-work" target="_blank" rel="noopener">单独打开 ↗</a></header>
+    <iframe id="viewer" title="Lost and found중간고사 과제" allow="autoplay; fullscreen" allowfullscreen></iframe>
   </main>
   <script>
     const uploadedWorks = [
-      { path: '중간고사 과제.html', title: 'Lost and found', group: '我的作品' },
+      { path: '중간고사 과제.html', title: 'Lost and found중간고사 과제', group: '我的作品' },
       { path: 'Dynamic-Balance_5week quanquanhai628-png_Dynamic-Balance.html', title: 'Dynamic Balance', url: 'https://quanquanhai628-png.github.io/Dynamic-Balance/', group: '我的作品' },
-      { path: 'Delete-Delete-Delete_index.html at main · quanquanhai628-png_Delete-Delete-Delete.html', title: 'MELT', url: 'https://quanquanhai628-png.github.io/Delete-Delete-Delete/', group: '我的作品' },
+      { path: 'Delete-Delete-Delete_index.html at main · quanquanhai628-png_Delete-Delete-Delete.html', title: 'Delete-Delete-Delete (MELT)', url: 'https://quanquanhai628-png.github.io/Delete-Delete-Delete/', group: '我的作品' },
       { path: 'Homework1/index.html', title: 'Homework1', group: '课堂练习' },
       { path: 'Homework2/index.html', title: 'Homework2', group: '课堂练习' },
       { path: 'Homework3/index.html', title: 'Homework3', group: '课堂练习' }
@@ -79,10 +79,6 @@
     function renderMenu() {
       menu.replaceChildren();
       for (const groupName of [...new Set(works.map(work => work.group))]) {
-        const heading = document.createElement('p');
-        heading.className = 'group';
-        heading.textContent = groupName;
-        menu.append(heading);
         for (const work of works.filter(work => work.group === groupName)) {
           const link = document.createElement('a');
           link.className = 'work';
